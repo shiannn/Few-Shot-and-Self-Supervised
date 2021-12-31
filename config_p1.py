@@ -9,6 +9,16 @@ TRAIN_CSV = os.path.join(DATAROOT, 'train.csv')
 VAL_ROOT = os.path.join(DATAROOT, 'val')
 VAL_CSV = os.path.join(DATAROOT, 'val.csv')
 
+CLASSES_PER_EPISODE = 5 ### ways
+SAMPLES_PER_CLASS = 6
+N_SUPPORT = 5 ### 5-shot
+EPISODES = 10
+NUM_WORKERS = 4
+EPOCH = 20
+
+os.environ['CUDA_VISIBLE_DEVICES'] = '0'
+DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+
 if __name__ == '__main__':
     print(BASE_DIR)
     print(TRAIN_CSV)
