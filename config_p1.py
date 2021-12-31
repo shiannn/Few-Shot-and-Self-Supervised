@@ -10,11 +10,12 @@ VAL_ROOT = os.path.join(DATAROOT, 'val')
 VAL_CSV = os.path.join(DATAROOT, 'val.csv')
 
 CLASSES_PER_EPISODE = 5 ### ways
-SAMPLES_PER_CLASS = 6
+SAMPLES_PER_CLASS = 8
 N_SUPPORT = 5 ### 5-shot
-EPISODES = 10
+EPISODES = 100
 NUM_WORKERS = 4
-EPOCH = 20
+EPOCH = 40
+LR = 1e-3
 
 os.environ['CUDA_VISIBLE_DEVICES'] = '0'
 DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
