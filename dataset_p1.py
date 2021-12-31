@@ -34,14 +34,14 @@ class MiniDataset(Dataset):
         return len(self.data_df)
 
 if __name__=='__main__':
-    from config_p1 import TRAIN_CSV, TRAIN_ROOT
+    from config_p1 import TRAIN_CSV, TRAIN_ROOT, VAL_CSV, VAL_ROOT
     protoTypicalBatchSampler = ProtoTypicalBatchSampler(
-        data_csv_root=TRAIN_CSV,
+        data_csv_root=VAL_CSV,
         classes_per_episode=5, 
         samples_per_class=6,
         episodes=10
     )
-    dataset = MiniDataset(TRAIN_CSV, TRAIN_ROOT)
+    dataset = MiniDataset(VAL_CSV, VAL_ROOT)
     #print(dataset[0])
     loader = DataLoader(
         dataset,

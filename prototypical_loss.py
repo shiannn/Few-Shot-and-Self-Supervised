@@ -30,7 +30,6 @@ def prototypical_loss(model_output, target):
     #print(loss_val)
     _, max_idx = logits.max(dim=1)
     #print(max_idx)
-    acc_val = (max_idx == query_targets).float().mean()
-    #print(acc_val)
+    correct_num = (max_idx == query_targets).sum()
     
-    return loss_val, acc_val
+    return loss_val, correct_num
