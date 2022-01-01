@@ -61,7 +61,7 @@ class GeneratorSampler(Sampler):
         return len(self.sampled_sequence)
 
 def predict(args, model, data_loader):
-
+    prediction_results = None
     with torch.no_grad():
         # each batch represent one episode (support data + query data)
         for i, (data, target) in enumerate(data_loader):
@@ -75,10 +75,26 @@ def predict(args, model, data_loader):
             query_label = torch.cuda.LongTensor([label_encoder[class_name] for class_name in target[args.N_way * args.N_shot:]])
 
             # TODO: extract the feature of support and query data
+            support_input = support_input.to(DEVICE)
+            query_input = query_input.to(DEVICE)
+            support_output = model(support_input)
+            query_output = model(query_input)
+            #print(support_output.shape)
+            #print(query_output.shape)
 
             # TODO: calculate the prototype for each class according to its support data
+            prototype = support_output.reshape(args.N_way, args.N_shot, -1).mean(dim=1)
 
             # TODO: classify the query data depending on the its distense with each prototype
+            pairdist=torch.cdist(query_output, prototype, p=2)
+            #print(pairdist.shape)
+            _, min_idx = torch.min(pairdist, dim=1, keepdim=True)
+            min_idx = min_idx.reshape(1,-1)
+            #print(min_idx)
+            if prediction_results is None:
+                prediction_results = min_idx.cpu().numpy()
+            else:
+                prediction_results = np.concatenate([prediction_results, min_idx.cpu().numpy()], axis=0)
 
     return prediction_results
 
@@ -106,7 +122,20 @@ if __name__=='__main__':
         sampler=GeneratorSampler(args.testcase_csv))
 
     # TODO: load your model
-
+    from model_p1 import Convnet
+    from config_p1 import DEVICE
+    
+    model = Convnet().to(DEVICE)
+    model.load_state_dict(torch.load(args.load))
+    model.eval()
     prediction_results = predict(args, model, test_loader)
 
     # TODO: output your prediction to csv
+    print(prediction_results)
+    ret = pd.DataFrame(
+        data=np.concatenate(
+            [np.arange(prediction_results.shape[0]).reshape(-1,1),prediction_results], axis=1
+        ),
+        columns=["episode_id"]+["query{}".format(i) for i in range(prediction_results.shape[1])]
+    )
+    ret.to_csv(args.output_csv, index=False)

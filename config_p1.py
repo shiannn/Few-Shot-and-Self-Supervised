@@ -9,9 +9,9 @@ TRAIN_CSV = os.path.join(DATAROOT, 'train.csv')
 VAL_ROOT = os.path.join(DATAROOT, 'val')
 VAL_CSV = os.path.join(DATAROOT, 'val.csv')
 
-CLASSES_PER_EPISODE = 5 ### ways
-SAMPLES_PER_CLASS = 8
-N_SUPPORT = 5 ### 5-shot
+CLASSES_PER_EPISODE = 10 ### ways
+SAMPLES_PER_CLASS = 20
+N_SUPPORT = 1 ### 1-shot
 EPISODES = 100
 NUM_WORKERS = 4
 EPOCH = 40
