@@ -1,9 +1,10 @@
+import os
 import torch
 import argparse
 import torch.nn as nn
 from config_p2 import (
     FINE_TUNE_TRAIN_CSV, FINE_TUNE_TRAIN_ROOT, FINE_TUNE_VAL_CSV, FINE_TUNE_VAL_ROOT,
-    NUM_WORKERS, EPOCH, BATCH_SIZE, FINE_TUNE_LR, DEVICE, NUM_CLASSES
+    NUM_WORKERS, FINE_TUNE_EPOCH, BATCH_SIZE, FINE_TUNE_LR, DEVICE, NUM_CLASSES
 )
 from torchvision import models
 from torch.utils.data import DataLoader
@@ -37,7 +38,8 @@ def training(args):
     finetune_valloader = DataLoader(finetune_valset, num_workers=NUM_WORKERS, batch_size=BATCH_SIZE, shuffle=False)
 
     losses = []
-    for epoch in range(EPOCH):
+    BEST_ACC = 0
+    for epoch in range(FINE_TUNE_EPOCH):
         resnet.train()
         for idx, batch_data in enumerate(finetune_trainloader):
             opt.zero_grad()
@@ -68,6 +70,10 @@ def training(args):
                 acc = (pred == labels).sum()
                 total_acc += acc
             print(total_acc, len(finetune_valloader.dataset))
+            if total_acc > BEST_ACC:
+                BEST_ACC = total_acc
+                print('best {} save...'.format(BEST_ACC))
+                torch.save(resnet.state_dict(), 'resnet_finetune.pkl')
 
 if __name__ == '__main__':
     args = arg_parse()

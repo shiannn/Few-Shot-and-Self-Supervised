@@ -18,6 +18,7 @@ LABEL2CIDX = {'Alarm_Clock': 0, 'Backpack': 1, 'Batteries': 2, 'Bed': 3, 'Bike':
 
 NUM_WORKERS = 4
 EPOCH = 160
+FINE_TUNE_EPOCH = 40
 LR=3e-4
 BATCH_SIZE = 32
 FINE_TUNE_LR = 1e-3
