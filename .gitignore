@@ -1,3 +1,6 @@
 hw4_data
 __pycache__
 *.pkl
+*.csv
+*.log
+*.pt
