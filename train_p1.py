@@ -6,7 +6,7 @@ from torch.utils.data import DataLoader, Dataset
 from config_p1 import (TRAIN_CSV, TRAIN_ROOT, 
     CLASSES_PER_EPISODE, SAMPLES_PER_CLASS, N_SUPPORT,
     EPOCH, EPISODES, NUM_WORKERS, DEVICE,
-    LR, VAL_ROOT, VAL_CSV
+    LR, VAL_ROOT, VAL_CSV, METRIC
 )
 from model_p1 import Convnet
 from prototypical_loss import prototypical_loss
@@ -53,7 +53,7 @@ def train():
             output = model(imgs)
             #print(output.shape)
             #print(labels)
-            loss_val, _ = prototypical_loss(output, labels)
+            loss_val, _ = prototypical_loss(output, labels, metric=METRIC)
             loss_val.backward()
             optimizer.step()
 
@@ -62,20 +62,22 @@ def train():
                 statis_loss.pop(0)
         #print(sum(statis_loss)/len(statis_loss), sum(statis_acc)/len(statis_acc))
         model.eval()
-        total_correct = 0
-        total = 0
+        episode_accs = []
         with torch.no_grad():
             for idx, batch_data in enumerate(validloader):
                 imgs, labels = batch_data
                 imgs = imgs.to(DEVICE)
                 output = model(imgs)
                 _, correct_num = prototypical_loss(output, labels)
-                total_correct += correct_num
-                total += CLASSES_PER_EPISODE*(SAMPLES_PER_CLASS-N_SUPPORT)
-            print('EPOCH {}'.format(epoch), total_correct, total)
-            if total_correct.item() > BEST_ACC:
-                BEST_ACC = total_correct.item()
-                torch.save(model.state_dict(), 'fewshot.pkl')
+                num_query = CLASSES_PER_EPISODE*(SAMPLES_PER_CLASS-N_SUPPORT)
+                episode_acc = correct_num.item()/num_query
+                episode_accs.append(episode_acc)
+            overall_acc = sum(episode_accs)/len(episode_accs)
+            print('EPOCH {}'.format(epoch), overall_acc)
+            if overall_acc > BEST_ACC:
+                BEST_ACC = overall_acc
+                print('Best', BEST_ACC)
+                #torch.save(model.state_dict(), 'fewshot1.pkl')
 
 if __name__ == '__main__':
     train()

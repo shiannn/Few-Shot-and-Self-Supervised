@@ -2,7 +2,7 @@ import torch
 from torch.nn import functional as F
 from config_p1 import CLASSES_PER_EPISODE, SAMPLES_PER_CLASS, N_SUPPORT, DEVICE
 
-def prototypical_loss(model_output, target):
+def prototypical_loss(model_output, target, metric='euc'):
     ### model_output CLASSES_PER_EPISODE* SAMPLES_PER_CLASS* dim
     model_output = model_output.reshape(CLASSES_PER_EPISODE, SAMPLES_PER_CLASS, -1)
     target = target.reshape(CLASSES_PER_EPISODE, SAMPLES_PER_CLASS)
@@ -20,7 +20,20 @@ def prototypical_loss(model_output, target):
     )
     #print(prototype.shape)
     #print(query_samples.shape)
-    pairdist=torch.cdist(query_samples, prototype, p=2)
+    if metric == 'euc':
+        pairdist=torch.cdist(query_samples, prototype, p=2)
+    elif metric == 'cos':
+        unit_query_samples = torch.nn.functional.normalize(query_samples, p=2)
+        unit_prototype = torch.nn.functional.normalize(prototype, p=2)
+        #print(unit_query_samples.shape)
+        #print(unit_prototype.shape)
+        cos_sim = torch.mm(unit_query_samples, unit_prototype.transpose(0, 1))
+        pairdist = 1-cos_sim
+    else:
+        repeat_query_samples = query_samples.repeat(1,prototype.shape[0])
+        print(repeat_query_samples.shape)
+        exit(0)
+
     #print(pairdist)
     logits = F.log_softmax(-pairdist, dim=1)
     #print(logits)

@@ -9,15 +9,17 @@ TRAIN_CSV = os.path.join(DATAROOT, 'train.csv')
 VAL_ROOT = os.path.join(DATAROOT, 'val')
 VAL_CSV = os.path.join(DATAROOT, 'val.csv')
 
-CLASSES_PER_EPISODE = 10 ### ways
-SAMPLES_PER_CLASS = 20
+CLASSES_PER_EPISODE = 5 ### ways
 N_SUPPORT = 1 ### 1-shot
-EPISODES = 100
+SAMPLES_PER_CLASS = N_SUPPORT+15 ### 15 querys
+EPISODES = 600
 NUM_WORKERS = 4
 EPOCH = 40
 LR = 1e-3
 
-os.environ['CUDA_VISIBLE_DEVICES'] = '0'
+METRIC = 'cos'
+
+os.environ['CUDA_VISIBLE_DEVICES'] = '2'
 DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 if __name__ == '__main__':
