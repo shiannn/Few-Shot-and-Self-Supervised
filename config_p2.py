@@ -10,7 +10,7 @@ VAL_ROOT = os.path.join(DATAROOT, 'val')
 VAL_CSV = os.path.join(DATAROOT, 'val.csv')
 
 NUM_WORKERS = 4
-EPOCH = 40
+EPOCH = 160
 LR=3e-4
 BATCH_SIZE = 32
 
