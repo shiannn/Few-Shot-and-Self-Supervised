@@ -7,8 +7,9 @@ from torch.utils.data import DataLoader, Dataset
 from config_p2 import LABEL2CIDX
 
 class OfficeHomeDataset(Dataset):
-    def __init__(self, csv_path, data_dir, is_test=False):
+    def __init__(self, csv_path, data_dir, is_valid=False, is_test=False):
         self.data_dir = data_dir
+        self.is_valid = is_valid 
         self.is_test = is_test
         self.data_df = pd.read_csv(csv_path).set_index("id")
         self.label2cidx = LABEL2CIDX
@@ -36,7 +37,10 @@ class OfficeHomeDataset(Dataset):
     def __getitem__(self, index):
         path = self.data_df.loc[index, "filename"]
         if not self.is_test:
-            image = self.transform(os.path.join(self.data_dir, path))
+            if self.is_valid:
+                image = self.test_transform(os.path.join(self.data_dir, path))
+            else:
+                image = self.transform(os.path.join(self.data_dir, path))
             label = self.data_df.loc[index, "label"]
             label = self.target_transform(label)
             return image, label

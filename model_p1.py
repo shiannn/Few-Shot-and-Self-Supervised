@@ -47,7 +47,9 @@ class RelationNet(nn.Module):
         return x.squeeze()
 
 if __name__ == '__main__':
-    rand_img = torch.rand(4,3,84,84)
-    model = Convnet()
-    ret = model(rand_img)
-    print(ret.shape)
+    #rand_img = torch.rand(4,3,84,84)
+    #model = Convnet()
+    #ret = model(rand_img)
+    #print(ret.shape)
+    rn = RelationNet()
+    print(rn)

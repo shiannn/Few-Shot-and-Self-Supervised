@@ -13,6 +13,7 @@ from dataset_p2 import OfficeHomeDataset
 def arg_parse():
     parser = argparse.ArgumentParser()
     parser.add_argument("--load", type=str)
+    parser.add_argument("--freeze_backbone", action="store_true")
     args = parser.parse_args()
 
     return args
@@ -23,10 +24,15 @@ def training(args):
         print('loading...', args.load)
         resnet.load_state_dict(torch.load(args.load))
     else:
-        print('please select model to finetune')
-        exit(0)
+        print('without pretraining...')
     
     resnet.fc = nn.Linear(2048, NUM_CLASSES)
+    if args.freeze_backbone:
+        for param in resnet.parameters():
+            param.requires_grad = False
+        resnet.fc.weight.requires_grad = True
+        resnet.fc.bias.requires_grad = True
+        
     resnet = resnet.to(DEVICE)
     
     opt = torch.optim.Adam(resnet.parameters(), lr=FINE_TUNE_LR)
@@ -34,7 +40,7 @@ def training(args):
 
     finetune_trainset = OfficeHomeDataset(FINE_TUNE_TRAIN_CSV, FINE_TUNE_TRAIN_ROOT)
     finetune_trainloader = DataLoader(finetune_trainset, num_workers=NUM_WORKERS, batch_size=BATCH_SIZE, shuffle=True)
-    finetune_valset = OfficeHomeDataset(FINE_TUNE_VAL_CSV, FINE_TUNE_VAL_ROOT)
+    finetune_valset = OfficeHomeDataset(FINE_TUNE_VAL_CSV, FINE_TUNE_VAL_ROOT, is_valid=True)
     finetune_valloader = DataLoader(finetune_valset, num_workers=NUM_WORKERS, batch_size=BATCH_SIZE, shuffle=False)
 
     losses = []
