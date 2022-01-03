@@ -8,7 +8,7 @@ from config_p1 import (TRAIN_CSV, TRAIN_ROOT,
     EPOCH, EPISODES, NUM_WORKERS, DEVICE,
     LR, VAL_ROOT, VAL_CSV, METRIC
 )
-from model_p1 import Convnet
+from model_p1 import Convnet, RelationNet
 from prototypical_loss import prototypical_loss
 
 def worker_init_fn(worker_id):                                                          
@@ -40,11 +40,19 @@ def train():
         batch_sampler=validBatchSampler
     )
     model = Convnet().to(DEVICE)
-    optimizer = torch.optim.Adam(params=model.parameters(), lr=LR)
+    relationNet = RelationNet().to(DEVICE)
+    if METRIC == 'parametric':
+        optimizer = torch.optim.Adam(
+            params=list(model.parameters())+list(relationNet.parameters()),
+            lr=LR
+        )
+    else:
+        optimizer = torch.optim.Adam(params=model.parameters(), lr=LR)
     statis_loss = []
     BEST_ACC = 0
     for epoch in range(EPOCH):
         model.train()
+        relationNet.train()
         for idx, batch_data in enumerate(trainloader):
             optimizer.zero_grad()
             imgs, labels = batch_data
@@ -53,7 +61,7 @@ def train():
             output = model(imgs)
             #print(output.shape)
             #print(labels)
-            loss_val, _ = prototypical_loss(output, labels, metric=METRIC)
+            loss_val, _ = prototypical_loss(output, labels, metric=METRIC, relationNet=relationNet)
             loss_val.backward()
             optimizer.step()
 
@@ -62,6 +70,7 @@ def train():
                 statis_loss.pop(0)
         #print(sum(statis_loss)/len(statis_loss), sum(statis_acc)/len(statis_acc))
         model.eval()
+        relationNet.eval()
         episode_accs = []
         with torch.no_grad():
             for idx, batch_data in enumerate(validloader):

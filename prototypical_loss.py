@@ -1,8 +1,9 @@
 import torch
+import torch.nn as nn
 from torch.nn import functional as F
 from config_p1 import CLASSES_PER_EPISODE, SAMPLES_PER_CLASS, N_SUPPORT, DEVICE
 
-def prototypical_loss(model_output, target, metric='euc'):
+def prototypical_loss(model_output, target, metric='euc', relationNet=None):
     ### model_output CLASSES_PER_EPISODE* SAMPLES_PER_CLASS* dim
     model_output = model_output.reshape(CLASSES_PER_EPISODE, SAMPLES_PER_CLASS, -1)
     target = target.reshape(CLASSES_PER_EPISODE, SAMPLES_PER_CLASS)
@@ -29,10 +30,20 @@ def prototypical_loss(model_output, target, metric='euc'):
         #print(unit_prototype.shape)
         cos_sim = torch.mm(unit_query_samples, unit_prototype.transpose(0, 1))
         pairdist = 1-cos_sim
-    else:
-        repeat_query_samples = query_samples.repeat(1,prototype.shape[0])
-        print(repeat_query_samples.shape)
-        exit(0)
+    elif metric == 'parametric':
+        if relationNet is None:
+            print('need relation net')
+            exit(0)
+        repeat_query_samples = query_samples.unsqueeze(1).repeat(1,prototype.shape[0],1)
+        repeat_prototypes = prototype.unsqueeze(0).repeat(query_samples.shape[0],1,1)
+        #print(repeat_query_samples.shape)
+        #print(repeat_prototypes.shape)
+        relation_matrix = torch.cat([repeat_query_samples, repeat_prototypes], dim=2)
+        #relation_matrix = (repeat_query_samples-repeat_prototypes)**2
+        relation_matrix = relation_matrix.unsqueeze(0).permute(0,3,1,2)
+        #print(relation_matrix.shape)
+        #print(relationNet(relation_matrix).shape)
+        pairdist = relationNet(relation_matrix)
 
     #print(pairdist)
     logits = F.log_softmax(-pairdist, dim=1)

@@ -17,7 +17,7 @@ NUM_WORKERS = 4
 EPOCH = 40
 LR = 1e-3
 
-METRIC = 'cos'
+METRIC = 'parametric'
 
 os.environ['CUDA_VISIBLE_DEVICES'] = '2'
 DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
