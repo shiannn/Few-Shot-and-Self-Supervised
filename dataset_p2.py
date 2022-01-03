@@ -7,8 +7,9 @@ from torch.utils.data import DataLoader, Dataset
 from config_p2 import LABEL2CIDX
 
 class OfficeHomeDataset(Dataset):
-    def __init__(self, csv_path, data_dir):
+    def __init__(self, csv_path, data_dir, is_test=False):
         self.data_dir = data_dir
+        self.is_test = is_test
         self.data_df = pd.read_csv(csv_path).set_index("id")
         self.label2cidx = LABEL2CIDX
         #print(self.label2cidx)
@@ -21,16 +22,27 @@ class OfficeHomeDataset(Dataset):
             transforms.ToTensor(),
             transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])
         ])
+        self.test_transform = transforms.Compose([
+            lambda x: Image.open(x),
+            transforms.Resize(size=160),
+            transforms.CenterCrop(size=128),
+            transforms.ToTensor(),
+            transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])
+        ])
         self.target_transform = transforms.Compose([
             lambda x: self.label2cidx[x],
         ])
 
     def __getitem__(self, index):
         path = self.data_df.loc[index, "filename"]
-        label = self.data_df.loc[index, "label"]
-        image = self.transform(os.path.join(self.data_dir, path))
-        label = self.target_transform(label)
-        return image, label
+        if not self.is_test:
+            image = self.transform(os.path.join(self.data_dir, path))
+            label = self.data_df.loc[index, "label"]
+            label = self.target_transform(label)
+            return image, label
+        else:
+            image = self.test_transform(os.path.join(self.data_dir, path))
+            return image
 
     def __len__(self):
         return len(self.data_df)
