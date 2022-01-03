@@ -27,7 +27,7 @@ BATCH_SIZE = 32
 FINE_TUNE_LR = 1e-3
 NUM_CLASSES = 65
 
-os.environ['CUDA_VISIBLE_DEVICES'] = '2'
+#os.environ['CUDA_VISIBLE_DEVICES'] = '2'
 DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 if __name__ == '__main__':
